@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { THEMES } from "./constants";
+import { THEMES } from "../constants.js";
 import NavBar from "./NavBar.jsx";
 
 function AppHeader() {

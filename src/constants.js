@@ -29,3 +29,5 @@ export const THEMES = {
   Coffee: "coffee",
   Winter: "winter",
 };
+
+export const API_URL = "http://localhost:3000";
