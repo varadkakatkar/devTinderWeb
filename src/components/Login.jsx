@@ -4,30 +4,65 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { API_URL } from "../constants";
+import { validateEmail, validatePassword } from "../utils/checkValidations";
 
 const Login = () => {
   const [emailId, setEmilId] = useState("john.doe12@example.com");
   const [password, setPassword] = useState("Password@123");
+  const [emailError, setEmailError] = useState("");
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmilId(value);
+    setEmailError(validateEmail(value));
+  };
+
   const handleLogin = async () => {
-    const result = await axios.post(
-      `${API_URL}/login`,
-      {
-        emailId: emailId,
-        password: password,
-      },
-      { withCredentials: true },
-    );
+    const emailError = validateEmail(emailId);
+    if (emailError) {
+      setEmailError(emailError);
+      return null;
+    }
 
-    const data = result.data;
-    console.log("data", data.user);
-    dispatch(addUser(data.user));
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
 
-    if (result.status == 200) {
-      navigate("/feed");
-    } else {
-      alert("Login failed");
+    setError("");
+    try {
+      const result = await axios.post(
+        `${API_URL}/login`,
+        {
+          emailId: emailId,
+          password: password,
+        },
+        { withCredentials: true },
+      );
+
+      const data = result.data;
+      console.log("data", data.user);
+      dispatch(addUser(data.user));
+
+      if (result.status == 200) {
+        setError("");
+        navigate("/feed");
+      } else {
+        alert("Login failed");
+      }
+    } catch (err) {
+      const backendError =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Login failed";
+      setError(backendError);
+      console.log("error", err);
     }
   };
 
@@ -45,8 +80,9 @@ const Login = () => {
               placeholder="Email"
               className="input input-bordered"
               value={emailId}
-              onChange={(e) => setEmilId(e.target.value)}
+              onChange={handleEmailChange}
             />
+            <p className="text-error">{emailError}</p>
           </div>
           <div className="form-control my-2">
             <label className="label">
@@ -59,7 +95,9 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <p className="text-error">{error}</p>
           </div>
+
           <div className="card-actions justify-end ">
             <button className="btn" onClick={handleLogin}>
               Login
