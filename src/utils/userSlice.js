@@ -10,7 +10,10 @@ const userSlice = createSlice({
   initialState: null,
   reducers: {
     addUser: (state, action) => {
-      return normalizeUserPayload(action.payload);
+      console.log("action.payload", action.payload);
+      const normalizedPayload = normalizeUserPayload(action.payload);
+      console.log("normalizedPayload", normalizedPayload);
+      return normalizedPayload;
     },
     removeUser: (state, action) => {
       return null;

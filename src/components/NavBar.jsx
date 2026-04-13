@@ -19,7 +19,7 @@ const NavBar = () => {
     }
   };
 
-  console.log("user ", user);
+  // console.log("user ", user);
   return (
     <>
       <div className="navbar bg-base-300 shadow-sm">

@@ -1,5 +1,5 @@
 const UserCard = ({ user }) => {
-  console.log(user);
+  // console.log("user in user card", JSON.stringify(user, null, 2));
   const { firstName, lastName, age, gender, about, photoUrl } = user;
 
   return (
