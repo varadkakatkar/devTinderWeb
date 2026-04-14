@@ -1,15 +1,20 @@
 import axios from "axios";
 import { removeFeed } from "../utils/feedSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const UserCard = ({ user }) => {
   // console.log("user in user card", JSON.stringify(user, null, 2));
   const { _id, firstName, lastName, age, gender, about, photoUrl } = user;
   const dispatch = useDispatch();
+  const loggedInUser = useSelector((store) => store.user);
+  const isViewingSelf =
+    loggedInUser?._id != null &&
+    _id != null &&
+    String(loggedInUser._id) === String(_id);
   const handleSendRequest = async (status, userId) => {
     try {
       await axios.post(
-        `request/send/interested/${status}/${userId}`,
+        `/request/send/${status}/${userId}`,
         {},
         { withCredentials: true },
       );
@@ -33,20 +38,22 @@ const UserCard = ({ user }) => {
         </h2>
         <p>{age + "," + gender}</p>
         <p className="text-sm text-base-content/70">{about}</p>
-        <div className="card-actions justify-end mt-3 gap-2">
-          <button
-            className="btn btn-secondary btn-outline btn-md"
-            onClick={() => handleSendRequest("ignored", _id)}
-          >
-            Ignore
-          </button>
-          <button
-            className="btn btn-primary btn-soft btn-md"
-            onClick={() => handleSendRequest("interested", _id)}
-          >
-            Interested
-          </button>
-        </div>
+        {!isViewingSelf && (
+          <div className="card-actions justify-end mt-3 gap-2">
+            <button
+              className="btn btn-secondary btn-outline btn-md"
+              onClick={() => handleSendRequest("ignored", _id)}
+            >
+              Ignore
+            </button>
+            <button
+              className="btn btn-primary btn-soft btn-md"
+              onClick={() => handleSendRequest("interested", _id)}
+            >
+              Interested
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

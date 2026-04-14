@@ -7,10 +7,13 @@ import { API_URL } from "../constants";
 import { validateEmail, validatePassword } from "../utils/checkValidations";
 
 const Login = () => {
-  const [emailId, setEmilId] = useState("john.doe12@example.com");
-  const [password, setPassword] = useState("Password@123");
+  const [emailId, setEmilId] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstname] = useState("");
+  const [lastName, setLastname] = useState("");
   const [emailError, setEmailError] = useState("");
   const [error, setError] = useState("");
+  const [isLoginForm, setLoginForm] = useState(true);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -21,20 +24,23 @@ const Login = () => {
     setEmailError(validateEmail(value));
   };
 
-  const handleLogin = async () => {
-    const emailError = validateEmail(emailId);
-    if (emailError) {
-      setEmailError(emailError);
-      return null;
-    }
+  const handleFirstNameChange = (e) => {
+    const value = e.target.value;
+    setFirstname(value);
+    //  setEmailError(validateEmail(value));
+  };
+  const handleLastNameChange = (e) => {
+    const value = e.target.value;
+    setLastname(value);
+    // setEmailError(validateEmail(value));
+  };
 
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      setError(passwordError);
-      return;
-    }
-
+  const toggleAuthMode = () => {
+    setLoginForm((v) => !v);
     setError("");
+  };
+
+  const handleLogin = async () => {
     try {
       const result = await axios.post(
         `${API_URL}/login`,
@@ -65,12 +71,87 @@ const Login = () => {
       console.log("error", err);
     }
   };
+  const handleSignUp = async () => {
+    const emailErr = validateEmail(emailId);
+    if (emailErr) {
+      setEmailError(emailErr);
+      return;
+    }
+    const passwordErr = validatePassword(password);
+    if (passwordErr) {
+      setError(passwordErr);
+      return;
+    }
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("First name and last name are required");
+      return;
+    }
+
+    setError("");
+    try {
+      const result = await axios.post(
+        `${API_URL}/signup`,
+        {
+          emailId,
+          password,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+        },
+        { withCredentials: true },
+      );
+
+      const data = result.data.data;
+      console.log("data", data);
+      dispatch(addUser(data));
+
+      if (result.status === 201) {
+        setError("");
+        navigate("/profile");
+      }
+    } catch (err) {
+      const backendError =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Sign up failed";
+      setError(backendError);
+      console.log("error", err);
+    }
+  };
 
   return (
     <div className="flex justify-center my-10">
       <div className="card bg-base-300 w-96 shadow-2xl">
         <div className="card-body">
-          <h2 className="card-title">Login</h2>
+          <h2 className="card-title">{isLoginForm ? "Login" : "SignUp"}</h2>
+          {!isLoginForm && (
+            <>
+              <div className="form-control my-2">
+                <label className="label">
+                  <span className="label-text">First Name</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  className="input input-bordered"
+                  value={firstName}
+                  onChange={handleFirstNameChange}
+                />
+              </div>
+              <div className="form-control my-2">
+                <label className="label">
+                  <span className="label-text">Last Name</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  className="input input-bordered"
+                  value={lastName}
+                  onChange={handleLastNameChange}
+                />
+              </div>
+            </>
+          )}
           <div className="form-control my-2">
             <label className="label">
               <span className="label-text">Email</span>
@@ -98,9 +179,32 @@ const Login = () => {
             <p className="text-error">{error}</p>
           </div>
 
-          <div className="card-actions justify-end ">
-            <button className="btn" onClick={handleLogin}>
-              Login
+          <div className="card-actions flex-col items-stretch gap-2 sm:flex-row sm:justify-end">
+            {isLoginForm ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleLogin}
+              >
+                Login
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSignUp}
+              >
+                Sign up
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={toggleAuthMode}
+            >
+              {isLoginForm
+                ? "New user? Create an account"
+                : "Already have an account? Log in"}
             </button>
           </div>
         </div>
