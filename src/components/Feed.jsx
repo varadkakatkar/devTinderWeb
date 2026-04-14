@@ -11,8 +11,10 @@ const Feed = () => {
 
   console.log("feed ", feed);
   const getFeed = useCallback(async () => {
+    if (feed) return;
     try {
       if (feed) return;
+      if (feed.length > 0) return <h1>No feed found</h1>;
       const res = await axios.get(`${API_URL}/feed`, { withCredentials: true });
       dispatch(addFeed(res.data?.data || []));
     } catch (error) {
